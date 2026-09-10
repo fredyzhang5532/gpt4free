@@ -16,16 +16,18 @@ models = {
     "code-llama-7b": "Code Llama 7B",
     "code-llama-13b": "Code Llama 13B",
     "code-llama-34b": "Code Llama 34B",
-    "qwen-2-72b": "Qwen"
+    "qwen-2-72b": "Qwen",
 }
+
 
 class ThebApi(OpenaiTemplate):
     label = "TheB.AI API"
     url = "https://theb.ai"
     login_url = "https://beta.theb.ai/home"
-    api_base = "https://api.theb.ai/v1"
+    base_url = "https://api.theb.ai/v1"
     working = True
     needs_auth = True
+    models_needs_auth = True
 
     default_model = "theb-ai"
     fallback_models = list(models)
@@ -37,9 +39,11 @@ class ThebApi(OpenaiTemplate):
         messages: Messages,
         temperature: float = None,
         top_p: float = None,
-        **kwargs
+        **kwargs,
     ) -> CreateResult:
-        system_message = "\n".join([message["content"] for message in messages if message["role"] == "system"])
+        system_message = "\n".join(
+            [message["content"] for message in messages if message["role"] == "system"]
+        )
         messages = [message for message in messages if message["role"] != "system"]
         data = {
             "model_params": filter_none(
@@ -48,4 +52,6 @@ class ThebApi(OpenaiTemplate):
                 top_p=top_p,
             )
         }
-        return super().create_async_generator(model, messages, extra_data=data, **kwargs)
+        return super().create_async_generator(
+            model, messages, extra_body=data, **kwargs
+        )
